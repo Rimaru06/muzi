@@ -1,6 +1,7 @@
 import { NextRequest , NextResponse } from "next/server";
 import prisma from "@/app/lib/db";
 import {z} from 'zod';
+import { getServerSession } from "next-auth";
 
 const YT_REGEX = /^(?:(?:https?:)?\/\/)?(?:www\.)?(?:m\.)?(?:youtu(?:be)?\.com\/(?:v\/|embed\/|watch(?:\/|\?v=))|youtu\.be\/)((?:\w|-){11})(?:\S+)?$/;
 
@@ -13,6 +14,8 @@ const CreateStreamSchema = z.object({
 
 export async function POST(req : NextRequest)
 {
+    const session = await getServerSession();
+    console.log(session)
     try {
         const data = CreateStreamSchema.parse(await req.json())
         
