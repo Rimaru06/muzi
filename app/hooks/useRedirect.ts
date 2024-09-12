@@ -16,5 +16,5 @@ export function useRedirect()
         {
             router.push('/');
         }
-    },[session])
+    },[session, router])
 }
