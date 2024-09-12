@@ -3,13 +3,14 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+
 const UpvoteSchema = z.object({
     streamId: z.string(),
 })
 
 export async function POST(req: NextRequest) {
     const session = await getServerSession();
-
+    
     // TODO: You can get rid of the db call here 
     console.log(session)
     const user = await prisma.user.findFirst({
