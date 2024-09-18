@@ -1,6 +1,6 @@
-'use client'
-
+"use client";
 import { useState, useEffect } from 'react'
+import YouTube from 'react-youtube'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ThumbsUp, ThumbsDown, Play, SkipForward, Share2 } from "lucide-react"
@@ -9,18 +9,16 @@ import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import axios from 'axios'
 import { useSession } from 'next-auth/react'
-import { set } from 'zod'
-
 
 interface Video {
   id: string;
   title: string;
   votes: number;
-  url : string,
-  smallImageUrl : string,
-  bigImageUrl : string,
-  type : string,
-  extractedId : string
+  url: string;
+  smallImageUrl: string;
+  bigImageUrl: string;
+  type: string;
+  extractedId: string;
 }
 
 export default function StreamVoteQueue() {
@@ -31,47 +29,59 @@ export default function StreamVoteQueue() {
 
   useEffect(() => {
     if (!currentVideo && queue.length > 0) {
-      playNext()
+      playNext();
     }
-  }, [currentVideo, queue])
+  }, [currentVideo, queue]);
 
-  useEffect(()=> {
-    if(queue.length === 0)
-    {
+  useEffect(() => {
+    if (queue.length === 0) {
+      console.log('Fetching streams');
+      console.log(session.data?.user.id);
       try {
-      axios.get(`http://localhost:3000/api/streams/?createrId=${session.data?.user.id}`).then((res) => {
-        setQueue(res.data.streams)
-      });
-         
+        axios.get(`http://localhost:3000/api/streams/?createrId=${session.data?.user.id}`).then((res) => {
+          setQueue(res.data.streams);
+        });
       } catch (error) {
         console.error("Error fetching streams:", error);
       }
     }
+  }, []);
 
-  },[])
+  const handleVideoEnd = async () => {
+    if (currentVideo) {
+      try {
+        await axios.delete(`http://localhost:3000/api/streams/?streamId=${currentVideo.id}`);
+        toast.success('Video deleted successfully!');
+        playNext();
+      } catch (error) {
+        console.error("Error deleting stream:", error);
+        toast.error('Failed to delete video');
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     try {
       const stream = await axios.post('http://localhost:3000/api/streams', {
         creatorId: session.data?.user.id,
         url: videoLink
-      })
-      console.log(stream.data)
+      });
       setQueue([...queue, {
         id: stream.data.stream.id,
         title: stream.data.stream.title,
         votes: 0,
-        url : stream.data.stream.url,
-        smallImageUrl : stream.data.stream.smallImageUrl,
-        bigImageUrl : stream.data.stream.bigImageUrl,
-        type : stream.data.stream.type,
-        extractedId : stream.data.stream.extractedId
-      }])
-      
+        url: stream.data.stream.url,
+        smallImageUrl: stream.data.stream.smallImageUrl,
+        bigImageUrl: stream.data.stream.bigImageUrl,
+        type: stream.data.stream.type,
+        extractedId: stream.data.stream.extractedId
+      }]);
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-  }
+  };
+
   const handleVote = (id: string, increment: number) => {
     setQueue(queue.map(video =>
       video.id === id ? { ...video, votes: video.votes + increment } : video
@@ -80,22 +90,12 @@ export default function StreamVoteQueue() {
 
   const playNext = () => {
     if (queue.length > 0) {
-      setCurrentVideo(queue[0])
-      const tobeDeleted = queue[0];
-      setQueue(queue.slice(1))
-      try {
-        axios.delete(`http://localhost:3000/api/streams/${tobeDeleted.id}`).then((res) => {
-        toast.success('Deleted successfully!')
-        }
-        );
-      } catch (error) {
-        console.error("Error deleting stream:", error);
-        toast.error('Failed to delete stream')
-      }
+      setCurrentVideo(queue[0]);
+      setQueue(queue.slice(1));
     } else {
-      setCurrentVideo(null)
+      setCurrentVideo(null);
     }
-  }
+  };
 
   const handleShare = async () => {
     const shareData = {
@@ -106,24 +106,24 @@ export default function StreamVoteQueue() {
 
     if (navigator.share && navigator.canShare(shareData)) {
       try {
-        await navigator.share(shareData)
-        toast.success('Shared successfully!')
+        await navigator.share(shareData);
+        toast.success('Shared successfully!');
       } catch (err) {
-        console.error('Error sharing:', err)
-        fallbackShare()
+        console.error('Error sharing:', err);
+        fallbackShare();
       }
     } else {
-      fallbackShare()
+      fallbackShare();
     }
   }
 
   const fallbackShare = () => {
     navigator.clipboard.writeText(window.location.href).then(() => {
-      toast.success('Link copied to clipboard!')
+      toast.success('Link copied to clipboard!');
     }, (err) => {
-      console.error('Could not copy text: ', err)
-      toast.error('Failed to copy link')
-    })
+      console.error('Could not copy text: ', err);
+      toast.error('Failed to copy link');
+    });
   }
 
   return (
@@ -153,13 +153,16 @@ export default function StreamVoteQueue() {
             {currentVideo ? (
               <>
                 <div className="aspect-w-16 aspect-h-9 mb-4">
-                  <iframe
-                    src={`https://www.youtube.com/embed/${currentVideo.extractedId}`}
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    className="w-full h-full"
-                  ></iframe>
+                  <YouTube
+                    videoId={currentVideo.extractedId} // Use YouTube video ID
+                    opts={{
+                      width: '100%',
+                      playerVars: {
+                        autoplay: 1, // Auto-play video
+                      },
+                    }}
+                    onEnd={handleVideoEnd} // Auto-play next video on end
+                  />
                 </div>
                 <div className="flex justify-between items-center">
                   <h3 className="text-lg font-semibold text-white">{currentVideo.title}</h3>
@@ -235,7 +238,7 @@ export default function StreamVoteQueue() {
       <footer className="bg-gray-800 bg-opacity-50 border-t border-gray-700 py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-center text-gray-400 text-sm">
-            © 2023 StreamVote. All rights reserved.
+            © 2024 StreamVote. All rights reserved.
           </p>
         </div>
       </footer>
