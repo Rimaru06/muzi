@@ -9,6 +9,7 @@ import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import axios from 'axios'
 import { useSession } from 'next-auth/react'
+import Image from 'next/image';
 
 interface Video {
   id: string;
@@ -208,10 +209,12 @@ export default function StreamVoteQueue() {
               {queue.map((video) => (
                 <li key={video.id} className="flex items-center justify-between bg-gray-700 bg-opacity-50 p-4 rounded-lg">
                   <div className="flex items-center">
-                    <img
+                    <Image
                       src={`https://img.youtube.com/vi/${video.extractedId}/default.jpg`}
                       alt={video.title}
-                      className="w-20 h-15 object-cover rounded mr-4"
+                      width={80}
+                      height={60}
+                      className="rounded mr-4"
                     />
                     <div>
                       <h3 className="text-lg font-semibold text-white">{video.title}</h3>
