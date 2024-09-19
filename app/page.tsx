@@ -61,16 +61,6 @@ export default function LandingPage() {
                 Join MusicStreamChoice today and create unforgettable experiences.
               </p>
             </div>
-            <div className="w-full max-w-sm space-y-2">
-              <form className="flex space-x-2">
-                <Input 
-                  className="max-w-lg flex-1 bg-gray-800 border-gray-700 text-white placeholder-gray-500" 
-                  placeholder="Enter your email" 
-                  type="email" 
-                />
-                <Button type="submit" className="bg-purple-600 text-white hover:bg-purple-700">Sign Up</Button>
-              </form>
-            </div>
           </div>
         </div>
       </section>

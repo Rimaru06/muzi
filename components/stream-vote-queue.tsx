@@ -3,13 +3,15 @@ import { useState, useEffect } from 'react'
 import YouTube from 'react-youtube'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ThumbsUp, ThumbsDown, Play, SkipForward, Share2 } from "lucide-react"
+import { ThumbsUp, ThumbsDown, Play, SkipForward, Share2, Loader } from "lucide-react"
 import Link from "next/link"
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import axios from 'axios'
 import { useSession } from 'next-auth/react'
 import Image from 'next/image';
+import { Appbar } from './Appbar';
+import { useRedirect } from '@/app/hooks/useRedirect';
 
 interface Video {
   id: string;
@@ -27,6 +29,9 @@ export default function StreamVoteQueue() {
   const [videoLink, setVideoLink] = useState('')
   const [currentVideo, setCurrentVideo] = useState<Video | null>(null)
   const [queue, setQueue] = useState<Video[]>([])
+  const [loading, setLoading] = useState(false);
+
+  useRedirect();
 
   useEffect(() => {
     if (!currentVideo && queue.length > 0) {
@@ -64,6 +69,7 @@ export default function StreamVoteQueue() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      setLoading(true);
       const stream = await axios.post('http://localhost:3000/api/streams', {
         creatorId: session.data?.user.id,
         url: videoLink
@@ -78,6 +84,7 @@ export default function StreamVoteQueue() {
         type: stream.data.stream.type,
         extractedId: stream.data.stream.extractedId
       }]);
+      setLoading(false);
     } catch (error) {
       console.log(error);
     }
@@ -97,56 +104,10 @@ export default function StreamVoteQueue() {
       setCurrentVideo(null);
     }
   };
-
-  const handleShare = async () => {
-    const shareData = {
-      title: 'Join my StreamVote queue!',
-      text: 'Vote for the next song to be played on my stream.',
-      url: window.location.href
-    }
-
-    if (navigator.share && navigator.canShare(shareData)) {
-      try {
-        await navigator.share(shareData);
-        toast.success('Shared successfully!');
-      } catch (err) {
-        console.error('Error sharing:', err);
-        fallbackShare();
-      }
-    } else {
-      fallbackShare();
-    }
-  }
-
-  const fallbackShare = () => {
-    navigator.clipboard.writeText(window.location.href).then(() => {
-      toast.success('Link copied to clipboard!');
-    }, (err) => {
-      console.error('Could not copy text: ', err);
-      toast.error('Failed to copy link');
-    });
-  }
-
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white">
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
-      <header className="bg-gray-800 bg-opacity-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex justify-start lg:w-0 lg:flex-1">
-              <Link href="#" className="flex items-center">
-                <Play className="h-8 w-8 text-purple-400" />
-                <span className="ml-2 text-xl font-bold text-white">MuziPuzi</span>
-              </Link>
-            </div>
-            <Button onClick={handleShare} className="bg-purple-600 hover:bg-purple-700 text-white">
-              <Share2 className="h-4 w-4 mr-2" />
-              Share
-            </Button>
-          </div>
-        </div>
-      </header>
-
+      <Appbar />
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <section className="bg-gray-800 bg-opacity-50 shadow rounded-lg p-6">
@@ -196,7 +157,7 @@ export default function StreamVoteQueue() {
                 />
               </div>
               <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700 text-white">
-                Add to Queue
+                {loading ? <Loader className="h-4 w-4 mr-2 animate-spin" /> : "Add to Queue"}
               </Button>
             </form>
           </section>
