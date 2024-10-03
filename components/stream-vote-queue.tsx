@@ -57,7 +57,7 @@ export default function StreamVoteQueue() {
     if (currentVideo) {
       try {
         await axios.delete(`http://localhost:3000/api/streams/?streamId=${currentVideo.id}`);
-        toast.success('Video deleted successfully!');
+        toast.success('Video played successfully!');
         playNext();
       } catch (error) {
         console.error("Error deleting stream:", error);
