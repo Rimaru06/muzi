@@ -4,14 +4,12 @@ import YouTube from 'react-youtube'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ThumbsUp, ThumbsDown, Play, SkipForward, Share2, Loader } from "lucide-react"
-import Link from "next/link"
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import axios from 'axios'
 import { useSession } from 'next-auth/react'
 import Image from 'next/image';
 import { Appbar } from './Appbar';
-import { useRedirect } from '@/app/hooks/useRedirect';
 
 interface Video {
   id: string;
@@ -30,8 +28,6 @@ export default function StreamVoteQueue() {
   const [currentVideo, setCurrentVideo] = useState<Video | null>(null)
   const [queue, setQueue] = useState<Video[]>([])
   const [loading, setLoading] = useState(false);
-
-  useRedirect();
 
   useEffect(() => {
     if (!currentVideo && queue.length > 0) {

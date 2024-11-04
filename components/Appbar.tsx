@@ -7,7 +7,7 @@ import Link from 'next/link';
 export function Appbar() {
     const session = useSession();
     return (
-        <header className="bg-gray-800 bg-opacity-50 shadow-sm">
+        <header className="bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center py-6">
                     <div className="flex justify-start lg:w-0 lg:flex-1">

@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,20 +8,19 @@ datasource db {
 }
 
 model Space {
-  id  String @id
-  userid String
+  id      String  @id @default(uuid())
+  name    String
+  users   User[]  @relation("UserSpaces")
   streams Stream[]
-  User User[]
 }
 
 model User {
   id       String   @id @default(uuid())
   email    String   @unique
   provider Provider
-  stream   Stream[]
+  streams  Stream[]
   upvotes  Upvote[]
-  spaceId  String
-  space    Space    @relation(fields: [spaceId], references: [id])
+  spaces   Space[]  @relation("UserSpaces")
 }
 
 model Stream {
@@ -42,8 +35,8 @@ model Stream {
   upvotes       Upvote[]
   userId        String
   user          User       @relation(fields: [userId], references: [id])
-  spaceid      String
-  space        Space      @relation(fields: [spaceid], references: [id])
+  spaceId       String
+  space         Space      @relation(fields: [spaceId], references: [id])
 }
 
 model Upvote {
